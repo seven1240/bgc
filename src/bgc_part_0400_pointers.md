@@ -160,11 +160,14 @@ int main(void)
 
     printf("The value of i is %d\n", i);
     printf("And its address is %p\n", (void *)&i);
-
-    // %p expects the argument to be a pointer to void
-    // so we cast it to make the compiler happy.
 }
 ```
+
+> **The above code contains a _cast_** where we coerce the type of the
+> expression `&i` to be type `void*`. This is to keep the compiler from
+> throwing a warning here. This is all stuff we haven't covered yet, so
+> just ignore the `(void*)` in the code above for now and pretend it's
+> not there.
 
 On my computer, this prints:
 
@@ -178,6 +181,19 @@ If you're curious, that hexadecimal number is 140,727,326,896,068 in
 decimal (base 10 just like Grandma used to use). That's the index into
 memory where the variable `i`'s data is stored. It's the address of `i`.
 It's the location of `i`. It's a pointer to `i`.
+
+> **Wait—you have 140 terabytes of RAM?** Yes! Don't you? But I do fib
+> my buns off; of course I don't (ca. 2024). Modern computers use a
+> miraculous technology called [flw[virtual memory|Virtual_memory]] that
+> makes processes think they have the entire memory space of your
+> computer to themselves, regardless of how much physical RAM backs it
+> up. So even though the address was that huge number, it's being mapped
+> to some lower physical memory address by the virtual memory system of
+> my CPU. This particular computer has 16 GB RAM (again, ca. 2024, but
+> I'm running Linux, so that's plenty). Terabytes of RAM? I'm a teacher,
+> not a dot-com bazillionaire. None of this is anything any of us have
+> to worry about except the part about me not being phenomenally
+> wealthy.
 
 It's a pointer because it lets you know where `i` is in memory. Like a
 home address written on a scrap of paper tells you where you can find a
