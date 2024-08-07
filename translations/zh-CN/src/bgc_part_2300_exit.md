@@ -1,22 +1,58 @@
-```c
-  这里是`main()`的`return`规则：
-```
+<!-- Beej的C指南
 
-* 你可以用`return`语句从`main()`中返回退出状态。`main()`是唯一拥有这种特殊行为的函数。在其他函数中使用`return`只是从该函数返回给调用者。
-* 如果你没有明确使用`return`而是直接从`main()`结尾跳出，那就跟返回`0`或`EXIT_SUCCESS`一样。
-* `exit()`
+# vim: ts=4:sw=4:nosi:et:tw=72
+-->
 
-这个也出现过几次。如果你在程序中的任何地方调用`exit()`，程序将在那一点退出。
+# 退出程序
 
-传递给`exit()`的参数是退出状态。
+发现有很多方法可以实现程序的退出，甚至有方法可以设置“钩子”，在程序退出时运行一个函数。
 
-### 使用`atexit()`设置退出处理程序
+在本章中，我们将深入研究并查看它们。
 
-你可以注册在程序退出时调用的函数，无论是通过从`main()`返回还是调用`exit()`函数。
+我们已经在 [退出状态](#exit-status) 部分讨论了退出状态代码的含义，所以如果有必要，请返回那里复习一下。
 
-使用带有处理程序函数名称的`atexit()`调用可以完成。你可以注册多个退出处理程序，它们将按照注册的相反顺序调用。
+本节中的所有函数都在 `<stdlib.h>`中。
 
-以下是一个示例：
+## 正常退出
+
+我们将从正常退出程序的常规方式开始，然后转向一些更罕见、更神秘的方式。
+
+当您正常退出程序时，所有打开的 I/O 流都会被刷新，临时文件将被删除。基本上，这是一个很好的退出，所有事情都会被清理和处理。除非您有其他理由，否则这几乎是您几乎总是想要做的。
+
+### 从`main()`返回
+
+[i[退出-->从 `main()` 返回]<]
+
+如果您注意到了，`main()`的返回类型是 `int`... 但我很少，几乎从来没有，从`main()`中 `return` 任何东西。
+
+这是因为对于 `main()` 来说（我再次强调，这个特殊情况 _只_ 适用于 `main()`，不适用于任何其他地方的函数），如果你掉到尾部，有一个 _隐式_ `return 0`。
+
+您可以随时从 `main()` 明确地 `return`，一些程序员觉得在 `main()` 的末尾始终有一个 `return` 更为 _正确_。但如果您省略它，C 将为您加上一个。
+
+所以... 这里是 `main()` 的 `return` 规则：
+
+* 你可以使用 `return` 语句从 `main()` 中返回一个退出状态。`main()`是唯一有这种特殊行为的函数。在任何其他函数中使用 `return` 只是从那个函数返回到调用者。
+* 如果你没有显式地使用 `return` 而是退出了 `main()`，就像你返回了 `0` 或 `EXIT_SUCCESS` 一样。
+
+退出-->从 `main()` 返回
+
+### `exit()`
+
+退出-->从 `main()` 返回
+
+这个也出现了几次。如果你在程序的任何地方调用 `exit()`，程序会在那个点退出。
+
+你传递给 `exit()` 的参数是退出状态。
+
+### 用 `atexit()` 设置退出处理程序
+
+`atexit()` 函数
+
+你可以注册函数，当程序退出时调用这些函数，无论是通过从 `main()` 返回还是调用 `exit()` 函数。
+
+使用处理程序函数名调用 `atexit()` 就可以了。你可以注册多个退出处理程序，它们将按照注册的相反顺序调用。
+
+这里是一个例子：
 
 ``` {.c .numberLines}
 #include <stdio.h>
@@ -24,12 +60,12 @@
 
 void on_exit_1(void)
 {
-    printf("调用退出处理程序1！\n");
+    printf("调用退出处理程序 1！\n");
 }
 
 void on_exit_2(void)
 {
-    printf("调用退出处理程序2！\n");
+    printf("调用退出处理程序 2！\n");
 }
 
 int main(void)
@@ -41,23 +77,27 @@ int main(void)
 }
 ```
 
-输出结果是：
+输出是：
 
 ``` {.default}
 即将退出...
-调用退出处理程序2！
-调用退出处理程序1！
+调用退出处理程序 2！
+调用退出处理程序 1！
 ```
 
-## 使用`quick_exit()`更快退出
+`atexit()` 函数
+
+## 通过 `quick_exit()` 快速退出
+
+`quick_exit()` 函数
 
 这类似于正常退出，不同之处在于：
 
-* 打开的文件可能不会被刷新。
-* 临时文件可能不会被删除。
-* `atexit()`处理程序不会被调用。
+- 打开的文件可能未被刷新。
+- 临时文件可能未被移除。
+- `atexit()` 处理程序不会被调用。
 
-但是有一种方法可以注册退出处理程序：类似于调用`atexit()`的方式，调用`at_quick_exit()`。
+但是有一种注册退出处理程序的方式：类似于调用 `atexit()`，调用 `at_quick_exit()`。
 
 ``` {.c .numberLines}
 #include <stdio.h>
@@ -65,17 +105,17 @@ int main(void)
 
 void on_quick_exit_1(void)
 {
-    printf("Quick exit handler 1 called!\n");
+    printf("快速退出处理程序 1 被调用！\n");
 }
 
 void on_quick_exit_2(void)
 {
-    printf("Quick exit handler 2 called!\n");
+    printf("快速退出处理程序 2 被调用！\n");
 }
 
 void on_exit(void)
 {
-    printf("Normal exit--I won't be called!\n");
+    printf("正常退出--我不会被调用！\n");
 }
 
 int main(void)
@@ -83,82 +123,30 @@ int main(void)
     at_quick_exit(on_quick_exit_1);
     at_quick_exit(on_quick_exit_2);
 
-    atexit(on_exit);  // This won't be called
+    atexit(on_exit);  // 这部分不会被调用
 
-    printf("About to quick exit...\n");
+    printf("即将快速退出...\n");
 
     quick_exit(0);
 }
 ```
 
-这将输出：
+会输出以下内容：
 
 ``` {.default}
-About to quick exit...
-Quick exit handler 2 called!
-Quick exit handler 1 called!
+即将快速退出...
+快速退出处理程序 2 被调用！
+快速退出处理程序 1 被调用！
 ```
 
-它的工作方式类似于 `exit()`/`atexit()`，不同之处在于文件刷新和清理可能不会执行。
-
-[了解更多[`quick_exit()` 函数]>]
-
-## 以原子方式摧毁它：`_Exit()`
-
-[了解更多[`_Exit()` 函数]<]
-
-调用 `_Exit()` 会立即退出，毫无疑问。不会执行退出时回调函数。文件不会被刷新。临时文件不会被删除。
-
-如果你必须立即退出，就使用这个。
-
-## 有时需要退出：`assert()`
-
-`assert()` 语句用于坚持某些条件为真，否则程序将退出。
-
-开发者经常使用 assert 来捕获绝不应发生的错误类型。
-
-``` {.c}
-#define PI 3.14159
-
-assert(PI > 3);   // 当然，是正确的，继续执行
-```
-
-与：
-
-``` {.c}
-goats -= 100;
-
-assert(goats >= 0);  // 不能有负的羊
-```
-
-在这种情况下，如果尝试运行并且 `goats` 减少到小于 `0`，则会发生如下情况：
-
-``` {.default}
-goat_counter: goat_counter.c:8: main: Assertion `goats >= 0' failed.
-Aborted
-```
-
-然后我被返回到命令行。
-
-这并不是很用户友好，因此仅用于用户永远不会看到的事情。通常人们会[编写自己的assert宏，以便更容易地关闭assert](#my-assert)。
-
-```c
-// Abnormal Exit: `_Exit()`
+它的功能类似于 `exit()`/`atexit()`，唯一的区别在于文件刷新和清理可能不会被执行。
 
 ## 异常退出：`abort()`
 
-// You can use this if something has gone horribly wrong and you want to
-// indicate as much to the outside environment. This also won't necessarily
-// clean up any open files, etc.
+如果出现严重问题并且希望向外部环境指示此情况，可以使用这个函数。这并不一定会清理任何打开的文件等。
 
-// I've rarely seen this used.
+我很少见到有人使用这个函数。
 
-// Some foreshadowing about _signals_: this actually works by raising a
-// `SIGABRT` signal which will end the process.
+有关信号的预告：该函数实际上是通过引发 `SIGABRT` 信号来工作的，这将结束进程。
 
-// What happens after that is up to the system, but on Unix-likes, it was
-// common to dump core as the program terminated.
-
-// [`abort()`函数]
-// 退出
-```
+之后会发生什么取决于系统，但在类Unix系统上，程序终止时通常会进行核心转储。
